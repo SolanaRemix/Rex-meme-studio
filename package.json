@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter apps/web dev",
-    "build": "pnpm --filter apps/web build",
-    "lint": "pnpm --filter apps/web lint",
+    "dev": "pnpm --filter @rex-meme-studio/web dev",
+    "build": "pnpm --filter @rex-meme-studio/web build",
+    "lint": "pnpm --filter @rex-meme-studio/web lint",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "devDependencies": {

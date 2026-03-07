@@ -10,21 +10,21 @@ interface Props {
   token: string;
 }
 
-const REWARD_SOL = parseInt(
-  process.env.NEXT_PUBLIC_REWARD_PER_MEME_SOL ?? '10',
-  10
-);
-const REWARD_BASE = parseInt(
-  process.env.NEXT_PUBLIC_REWARD_PER_MEME_BASE ?? '10',
-  10
-);
-
 export function RewardsPanel({ memeId, token }: Props) {
   const { publicKey: solanaKey } = useWallet();
   const { address: evmAddress } = useAccount();
   const [claimedSol, setClaimedSol] = useState(false);
   const [claimedBase, setClaimedBase] = useState(false);
   const [claiming, setClaiming] = useState<'sol' | 'base' | null>(null);
+
+  const rewardSol = parseInt(
+    process.env.NEXT_PUBLIC_REWARD_PER_MEME_SOL ?? '10',
+    10
+  );
+  const rewardBase = parseInt(
+    process.env.NEXT_PUBLIC_REWARD_PER_MEME_BASE ?? '10',
+    10
+  );
 
   const handleClaimSolana = async () => {
     if (!solanaKey) return;
@@ -67,7 +67,7 @@ export function RewardsPanel({ memeId, token }: Props) {
               Solana
             </span>
             <span className="ml-auto text-xs font-mono text-neoCyan/60">
-              +{REWARD_SOL} GXQ
+              +{rewardSol} GXQ
             </span>
           </div>
           {solanaKey ? (
@@ -102,7 +102,7 @@ export function RewardsPanel({ memeId, token }: Props) {
               Base
             </span>
             <span className="ml-auto text-xs font-mono text-neoMagenta/60">
-              +{REWARD_BASE} GXQ
+              +{rewardBase} GXQ
             </span>
           </div>
           {evmAddress ? (

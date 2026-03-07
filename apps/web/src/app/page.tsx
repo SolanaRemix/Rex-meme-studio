@@ -23,7 +23,11 @@ export default function HomePage() {
   const [style, setStyle] = useState<MemeStyle>('neoGlow');
   const [caption, setCaption] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [memeId] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [memeId] = useState<string>(() =>
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 10)
+      : Math.random().toString(36).slice(2, 12)
+  );
   const [generatedSvg, setGeneratedSvg] = useState<string | null>(null);
   const [showRewards, setShowRewards] = useState(false);
 
@@ -157,11 +161,11 @@ export default function HomePage() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.metaKey) handleGenerateCaption();
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerateCaption();
                 }}
               />
               <p className="text-neoCyan/30 text-xs mt-1 font-mono">
-                ⌘+Enter to generate
+                ⌘/Ctrl+Enter to generate
               </p>
             </div>
 

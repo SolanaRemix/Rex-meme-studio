@@ -21,12 +21,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className="font-mono antialiased bg-neoDark text-white min-h-screen">
         <WalletProviders>{children}</WalletProviders>
       </body>

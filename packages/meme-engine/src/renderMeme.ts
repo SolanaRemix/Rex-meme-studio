@@ -1,6 +1,8 @@
 import type { RenderOptions } from './types';
 import { getTemplate } from './templates';
 
+const MAX_CAPTION_LENGTH = 60;
+
 const TOKEN_EMOJIS: Record<string, string> = {
   bonk: '🐕',
   wif: '🎩',
@@ -35,9 +37,8 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
   const bgColor = bgLayer?.style?.fill ?? '#0A0A0F';
 
   // Truncate caption for display
-  const maxLen = 60;
   const displayCaption =
-    caption.length > maxLen ? caption.slice(0, maxLen - 3) + '...' : caption;
+    caption.length > MAX_CAPTION_LENGTH ? caption.slice(0, MAX_CAPTION_LENGTH - 3) + '...' : caption;
 
   // Split caption into two lines if long
   const words = displayCaption.split(' ');
@@ -77,6 +78,9 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
     <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse">
       <path d="M 25 0 L 0 0 0 25" fill="none" stroke="${primaryColor}" stroke-width="0.5" opacity="${gridOpacity}"/>
     </pattern>
+    <pattern id="scanlines" width="1" height="4" patternUnits="userSpaceOnUse">
+      <rect width="1" height="2" fill="black" opacity="${scanlineOpacity}"/>
+    </pattern>
     <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:${bgColor};stop-opacity:1" />
       <stop offset="100%" style="stop-color:#0A0A0F;stop-opacity:1" />
@@ -88,9 +92,7 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
   <rect width="500" height="500" fill="url(#grid)"/>
 
   <!-- Scanlines -->
-  <rect width="500" height="500" fill="none"
-    style="background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,${scanlineOpacity}) 2px, rgba(0,0,0,${scanlineOpacity}) 4px)"
-    opacity="${scanlineOpacity}"/>
+  <rect width="500" height="500" fill="url(#scanlines)"/>
 
   <!-- Border glow -->
   <rect x="4" y="4" width="492" height="492" rx="12" ry="12"

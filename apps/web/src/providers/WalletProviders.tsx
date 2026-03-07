@@ -11,7 +11,7 @@ import {
   SolflareWalletAdapter,
   CoinbaseWalletAdapter as SolanaCoinbaseWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, http } from 'wagmi';
 import { base, mainnet } from 'wagmi/chains';
 import {
   RainbowKitProvider,
@@ -26,7 +26,7 @@ const queryClient = new QueryClient();
 
 const wagmiConfig = getDefaultConfig({
   appName: 'Rex Meme Studio',
-  projectId: 'rex-meme-studio',
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? 'rex-meme-studio-default',
   chains: [base, mainnet],
   transports: {
     [base.id]: http(

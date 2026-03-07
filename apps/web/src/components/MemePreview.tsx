@@ -12,7 +12,7 @@ interface Props {
   memeId: string;
 }
 
-export function MemePreview({ svg, token, caption, style, memeId }: Props) {
+export function MemePreview({ svg, token, style, memeId }: Props) {
   if (!svg) {
     return (
       <div className="aspect-square w-full bg-neoCard/50 border border-neoCyan/10 rounded-xl flex flex-col items-center justify-center gap-4">

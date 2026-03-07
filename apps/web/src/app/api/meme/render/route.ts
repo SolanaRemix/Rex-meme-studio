@@ -46,8 +46,9 @@ export async function POST(req: NextRequest) {
             'Content-Disposition': `inline; filename="rex-meme.png"`,
           },
         });
-      } catch {
-        // Fallback: return SVG with PNG content type hint
+      } catch (pngErr) {
+        // Fallback: return SVG when sharp is unavailable
+        console.error('[api/meme/render] PNG conversion failed, falling back to SVG:', pngErr);
         return new NextResponse(svg, {
           headers: { 'Content-Type': 'image/svg+xml' },
         });
@@ -89,7 +90,8 @@ export async function GET(req: NextRequest) {
       return new NextResponse(new Uint8Array(renderedPngBuffer), {
         headers: { 'Content-Type': 'image/png' },
       });
-    } catch {
+    } catch (pngErr) {
+      console.error('[api/meme/render] GET PNG conversion failed, falling back to SVG:', pngErr);
       return new NextResponse(svg, {
         headers: { 'Content-Type': 'image/svg+xml' },
       });
