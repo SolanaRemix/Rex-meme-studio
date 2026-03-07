@@ -1,0 +1,14 @@
+{
+  "name": "rex-meme-studio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter apps/web dev",
+    "build": "pnpm --filter apps/web build",
+    "lint": "pnpm --filter apps/web lint",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

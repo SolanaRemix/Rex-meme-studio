@@ -1,0 +1,42 @@
+{
+  "name": "apps/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "framer-motion": "^11",
+    "@rainbow-me/rainbowkit": "^2",
+    "wagmi": "^2",
+    "viem": "^2",
+    "@solana/wallet-adapter-react": "^0.15",
+    "@solana/wallet-adapter-react-ui": "^0.9",
+    "@solana/wallet-adapter-wallets": "^0.19",
+    "@solana/wallet-adapter-base": "^0.9",
+    "@solana/web3.js": "^1",
+    "sharp": "^0.33",
+    "@tanstack/react-query": "^5",
+    "design-system": "workspace:*",
+    "meme-engine": "workspace:*",
+    "rewards": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "tailwindcss": "^3.4",
+    "@tailwindcss/typography": "^0.5",
+    "autoprefixer": "^10",
+    "postcss": "^8",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/node": "^20"
+  }
+}
