@@ -88,14 +88,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET for direct image embedding (e.g. Open Graph)
+// GET for direct image embedding (e.g. Open Graph, Blink icons, shared meme links)
+// Accepts optional templateId/caption/style params so shared URLs reproduce the correct meme.
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id') ?? 'demo';
   const format = (searchParams.get('format') ?? 'svg') as 'png' | 'svg' | 'gif';
 
-  const caption = `Rex Meme #${id}`;
-  const svg = renderMemeSvg({ templateId: 'bonk', caption, style: 'neoGlow' });
+  // Use caller-supplied params if present (shared link reconstruction), else fall back to defaults
+  const rawStyle = searchParams.get('style') ?? 'neoGlow';
+  const style: 'neoGlow' | 'flash' | 'glitch' = VALID_STYLES.has(rawStyle)
+    ? (rawStyle as 'neoGlow' | 'flash' | 'glitch')
+    : 'neoGlow';
+  const templateId = searchParams.get('templateId') ?? 'bonk';
+  const rawCaption = searchParams.get('caption') ?? `Rex Meme #${id}`;
+  const caption = rawCaption.slice(0, MAX_CAPTION_LENGTH);
+
+  const svg = renderMemeSvg({ templateId, caption, style });
 
   if (format === 'png') {
     try {
@@ -105,10 +114,11 @@ export async function GET(req: NextRequest) {
         headers: { 'Content-Type': 'image/png' },
       });
     } catch (pngErr) {
-      console.error('[api/meme/render] GET PNG conversion failed, falling back to SVG:', pngErr);
-      return new NextResponse(svg, {
-        headers: { 'Content-Type': 'image/svg+xml' },
-      });
+      console.error('[api/meme/render] GET PNG conversion failed:', pngErr);
+      return NextResponse.json(
+        { error: 'PNG export unavailable. Try SVG format instead.' },
+        { status: 503 }
+      );
     }
   }
 

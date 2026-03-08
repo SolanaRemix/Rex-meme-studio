@@ -62,9 +62,11 @@ export class BaseRewardService {
 
 /**
  * Factory function for server-side use only.
- * Reads REWARD_MODE_BASE and REWARD_PER_MEME_BASE from the server environment
- * (not NEXT_PUBLIC_ prefixed — these must NOT be called from client components).
- * Instantiate this only from API routes or server-side code.
+ * Reads configuration from the environment:
+ * - REWARD_MODE_BASE, REWARD_PER_MEME_BASE — server-only (not NEXT_PUBLIC_); controls reward behavior
+ * - NEXT_PUBLIC_GXQ_TOKEN_BASE — intentionally public (token contract address is not a secret)
+ * - NEXT_PUBLIC_BASE_RPC_URL — intentionally public (public RPC endpoint is not a secret)
+ * Do NOT call this factory from client components; use only from API routes or server-side code.
  */
 export function createBaseRewardService(): BaseRewardService {
   return new BaseRewardService({
