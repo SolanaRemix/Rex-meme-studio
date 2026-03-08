@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(req: NextRequest) {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ??
-    `https://${req.headers.get('host') ?? 'localhost:3000'}`;
+    req.nextUrl.origin;
 
   const blinkAction = {
     title: 'Create a Rex Meme',
