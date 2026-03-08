@@ -1,0 +1,24 @@
+{
+  "name": "design-system",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "framer-motion": "^11"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/react": "^18",
+    "@types/react-dom": "^18"
+  }
+}
