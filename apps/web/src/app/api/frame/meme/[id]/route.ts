@@ -11,6 +11,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     `https://${req.headers.get('host') ?? 'localhost:3000'}`;
 
   const imageUrl = `${baseUrl}/api/meme/render?id=${id}&format=png`;
+  // post_url now points to the same route which handles both GET (initial frame)
+  // and POST (button interactions returning the next frame)
   const postUrl = `${baseUrl}/api/frame/meme/${id}`;
   const memeUrl = `${baseUrl}/meme/${id}`;
 
@@ -37,6 +39,57 @@ export async function GET(req: NextRequest, { params }: Params) {
   <body>
     <p>Rex Meme #${id}</p>
   </body>
+</html>`;
+
+  return new NextResponse(html, {
+    headers: { 'Content-Type': 'text/html' },
+  });
+}
+
+/**
+ * POST handler for Farcaster Frame button interactions.
+ * Farcaster sends a POST to post_url when a user clicks a frame button.
+ * This returns the next frame (or the same frame as a fallback).
+ */
+export async function POST(req: NextRequest, { params }: Params) {
+  const { id } = await params;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    `https://${req.headers.get('host') ?? 'localhost:3000'}`;
+
+  // Parse the frame action payload (button index, etc.)
+  let buttonIndex = 1;
+  try {
+    const body = (await req.json()) as { untrustedData?: { buttonIndex?: number } };
+    buttonIndex = body.untrustedData?.buttonIndex ?? 1;
+  } catch {
+    // Proceed with default
+  }
+
+  const imageUrl = `${baseUrl}/api/meme/render?id=${id}&format=png`;
+  const postUrl = `${baseUrl}/api/frame/meme/${id}`;
+  // Button 1 → "Remix This Meme" → link to /meme/[id]?remix=1
+  // Button 2 → "Create Your Own" → link to home
+  // Any other or unknown button index → fall back to home
+  const targetUrl =
+    buttonIndex === 1 ? `${baseUrl}/meme/${id}?remix=1` : baseUrl;
+
+  // Return the next frame response. Since both buttons use action="link",
+  // Farcaster navigates the user directly to `target` and does not POST again.
+  // This response is returned as a fallback for any future non-link button types.
+  const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta property="og:title" content="Rex Meme #${id}" />
+    <meta property="og:image" content="${imageUrl}" />
+    <meta name="fc:frame" content="vNext" />
+    <meta name="fc:frame:image" content="${imageUrl}" />
+    <meta name="fc:frame:post_url" content="${postUrl}" />
+    <meta name="fc:frame:button:1" content="Open Studio" />
+    <meta name="fc:frame:button:1:action" content="link" />
+    <meta name="fc:frame:button:1:target" content="${targetUrl}" />
+  </head>
+  <body><p>Rex Meme #${id}</p></body>
 </html>`;
 
   return new NextResponse(html, {

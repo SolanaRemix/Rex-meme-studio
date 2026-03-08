@@ -24,8 +24,11 @@ export class SolanaRewardService {
     }
 
     if (this.config.mode === 'demo') {
-      // Demo mode: simulate a successful transaction
-      const mockTxHash = `DEMO_SOL_${Date.now()}_${memeId.slice(0, 8)}`;
+      // Demo mode: simulate a successful transaction with a plausible base58 signature
+      const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      const mockTxHash = Array.from({ length: 88 }, () =>
+        base58Chars[Math.floor(Math.random() * base58Chars.length)]
+      ).join('');
       console.log(
         `[SolanaRewardService] DEMO: Would send ${amount} GXQ to ${walletAddress} for meme ${memeId}`
       );
@@ -51,6 +54,12 @@ export class SolanaRewardService {
   }
 }
 
+/**
+ * Factory function for server-side use only.
+ * Reads REWARD_MODE_SOL and REWARD_PER_MEME_SOL from the server environment
+ * (not NEXT_PUBLIC_ prefixed — these must NOT be called from client components).
+ * Instantiate this only from API routes or server-side code.
+ */
 export function createSolanaRewardService(): SolanaRewardService {
   return new SolanaRewardService({
     chain: 'solana',

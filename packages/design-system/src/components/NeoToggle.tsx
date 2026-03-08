@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 import { motion } from 'framer-motion';
 import { neoColors } from '../theme';
 
@@ -20,9 +20,11 @@ export function NeoToggle({
   disabled = false,
 }: NeoToggleProps) {
   const activeColor = neoColors[color];
+  const id = useId();
 
   return (
     <label
+      htmlFor={id}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -32,8 +34,30 @@ export function NeoToggle({
         userSelect: 'none',
       }}
     >
+      {/* Visually hidden native checkbox for accessibility */}
+      <input
+        id={id}
+        type="checkbox"
+        role="switch"
+        aria-checked={checked}
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          borderWidth: 0,
+        }}
+      />
+      {/* Custom visual toggle track — pointer-events:none so clicks flow through to the checkbox */}
       <div
-        onClick={() => !disabled && onChange(!checked)}
+        aria-hidden="true"
         style={{
           width: '42px',
           height: '22px',
@@ -43,6 +67,7 @@ export function NeoToggle({
           position: 'relative',
           transition: 'all 0.2s',
           boxShadow: checked ? `0 0 10px ${activeColor}44` : 'none',
+          pointerEvents: 'none',
         }}
       >
         <motion.div

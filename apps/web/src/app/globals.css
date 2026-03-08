@@ -30,10 +30,9 @@ body {
 body {
   background-color: var(--neo-dark);
   background-image:
-    linear-gradient(var(--neo-cyan) 1px, transparent 1px),
-    linear-gradient(90deg, var(--neo-cyan) 1px, transparent 1px);
+    linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 50px 50px;
-  background-opacity: 0.05;
 }
 
 @layer components {

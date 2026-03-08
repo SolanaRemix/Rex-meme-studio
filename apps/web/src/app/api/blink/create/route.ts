@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
 
   const blinkAction = {
     title: 'Create a Rex Meme',
-    icon: `${baseUrl}/icon.png`,
+    // Use the meme render endpoint as the icon (returns SVG/PNG)
+    icon: `${baseUrl}/api/meme/render?id=demo&format=png`,
     description:
       'Generate an AI-powered meme with NEO GLOW aesthetics. Earn rewards on Solana & Base.',
     label: 'Generate Meme',

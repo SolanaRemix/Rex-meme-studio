@@ -3,6 +3,9 @@ import { getTemplate } from './templates';
 
 const MAX_CAPTION_LENGTH = 60;
 
+/** Valid style values – used to guard against injections. */
+const VALID_STYLES = new Set(['neoGlow', 'flash', 'glitch']);
+
 const TOKEN_EMOJIS: Record<string, string> = {
   bonk: '🐕',
   wif: '🎩',
@@ -23,6 +26,11 @@ const STYLE_FILTERS: Record<string, string> = {
  * For PNG/GIF export, pipe this SVG through sharp on the server.
  */
 export function renderMemeSvg({ templateId, caption, style }: RenderOptions): string {
+  // Validate style to prevent injection via the style label inserted into SVG
+  const safeStyle: 'neoGlow' | 'flash' | 'glitch' = VALID_STYLES.has(style)
+    ? (style as 'neoGlow' | 'flash' | 'glitch')
+    : 'neoGlow';
+
   const template = getTemplate(templateId);
   const token = template.token;
   const tokenKey = templateId.toLowerCase();
@@ -48,7 +56,7 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
   const hasTwoLines = line2.length > 0;
 
   const glowFilter =
-    style === 'neoGlow'
+    safeStyle === 'neoGlow'
       ? `
     <filter id="neo-glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="4" result="blur"/>
@@ -57,7 +65,7 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>`
-      : style === 'flash'
+      : safeStyle === 'flash'
         ? `
     <filter id="flash-filter">
       <feColorMatrix type="saturate" values="3"/>
@@ -68,9 +76,9 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
       <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
     </filter>`;
 
-  const gridOpacity = style === 'neoGlow' ? '0.08' : style === 'flash' ? '0.15' : '0.05';
-  const glowFilterAttr = STYLE_FILTERS[style] ?? '';
-  const scanlineOpacity = style === 'glitch' ? '0.12' : '0.05';
+  const gridOpacity = safeStyle === 'neoGlow' ? '0.08' : safeStyle === 'flash' ? '0.15' : '0.05';
+  const glowFilterAttr = STYLE_FILTERS[safeStyle] ?? '';
+  const scanlineOpacity = safeStyle === 'glitch' ? '0.12' : '0.05';
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
   <defs>
@@ -138,7 +146,7 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
 
   <!-- Style indicator -->
   <text x="250" y="490" text-anchor="middle" font-family="JetBrains Mono, monospace"
-    font-size="9" fill="${primaryColor}" opacity="0.3" letter-spacing="3">${style.toUpperCase()} · REX MEME STUDIO</text>
+    font-size="9" fill="${primaryColor}" opacity="0.3" letter-spacing="3">${escapeXml(safeStyle.toUpperCase())} · REX MEME STUDIO</text>
 </svg>`;
 }
 

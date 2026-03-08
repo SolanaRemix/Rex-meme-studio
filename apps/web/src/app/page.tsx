@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -30,6 +30,15 @@ export default function HomePage() {
   );
   const [generatedSvg, setGeneratedSvg] = useState<string | null>(null);
   const [showRewards, setShowRewards] = useState(false);
+
+  // Apply ?token= from URL (e.g. from Solana Blink deep links)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tokenParam = params.get('token');
+    if (tokenParam && SUPPORTED_TOKENS.includes(tokenParam)) {
+      setSelectedToken(tokenParam);
+    }
+  }, []);
 
   const handleGenerateCaption = useCallback(async () => {
     if (!prompt.trim()) return;

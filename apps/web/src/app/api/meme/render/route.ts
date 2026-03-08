@@ -7,6 +7,9 @@ import { renderMemeSvg } from 'meme-engine';
 
 export const runtime = 'nodejs';
 
+const VALID_STYLES = new Set(['neoGlow', 'flash', 'glitch']);
+const MAX_CAPTION_LENGTH = 500;
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as {
@@ -26,7 +29,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const svg = renderMemeSvg({ templateId, caption, style: style as 'neoGlow' | 'flash' | 'glitch' });
+    // Validate style against an explicit allowlist before passing to the SVG renderer
+    if (!VALID_STYLES.has(style)) {
+      return NextResponse.json(
+        { error: `Invalid style. Must be one of: ${[...VALID_STYLES].join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Constrain caption length to prevent oversized SVG generation
+    const safeCaption = caption.slice(0, MAX_CAPTION_LENGTH);
+
+    const svg = renderMemeSvg({ templateId, caption: safeCaption, style: style as 'neoGlow' | 'flash' | 'glitch' });
 
     if (format === 'svg') {
       return NextResponse.json({ svg });
@@ -47,11 +61,11 @@ export async function POST(req: NextRequest) {
           },
         });
       } catch (pngErr) {
-        // Fallback: return SVG when sharp is unavailable
-        console.error('[api/meme/render] PNG conversion failed, falling back to SVG:', pngErr);
-        return new NextResponse(svg, {
-          headers: { 'Content-Type': 'image/svg+xml' },
-        });
+        console.error('[api/meme/render] PNG conversion failed:', pngErr);
+        return NextResponse.json(
+          { error: 'PNG export unavailable. Try SVG format instead.' },
+          { status: 503 }
+        );
       }
     }
 

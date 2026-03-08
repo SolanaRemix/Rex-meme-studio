@@ -25,7 +25,11 @@ export class BaseRewardService {
 
     if (this.config.mode === 'demo') {
       // Demo mode: simulate a successful transaction
-      const mockTxHash = `0xDEMO_BASE_${Date.now().toString(16)}_${memeId.slice(0, 8)}`;
+      // Generate a valid-looking 0x-prefixed 64-hex-char tx hash
+      const hexPart = Array.from({ length: 64 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      ).join('');
+      const mockTxHash = `0x${hexPart}`;
       console.log(
         `[BaseRewardService] DEMO: Would send ${amount} GXQ to ${walletAddress} for meme ${memeId}`
       );
@@ -56,6 +60,12 @@ export class BaseRewardService {
   }
 }
 
+/**
+ * Factory function for server-side use only.
+ * Reads REWARD_MODE_BASE and REWARD_PER_MEME_BASE from the server environment
+ * (not NEXT_PUBLIC_ prefixed — these must NOT be called from client components).
+ * Instantiate this only from API routes or server-side code.
+ */
 export function createBaseRewardService(): BaseRewardService {
   return new BaseRewardService({
     chain: 'base',

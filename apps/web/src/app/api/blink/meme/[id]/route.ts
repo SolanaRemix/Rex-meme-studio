@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       actions: [
         {
           label: 'Remix',
-          href: `/meme/${id}?remix=1`,
+          href: `${baseUrl}/meme/${id}?remix=1`,
         },
         {
           label: 'Share on X',

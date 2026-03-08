@@ -39,7 +39,10 @@ export async function POST(req: NextRequest) {
       ],
     };
 
-    const styleKey = (style as keyof typeof captions) in captions ? (style as keyof typeof captions) : 'neoGlow';
+    const validStyles = ['neoGlow', 'flash', 'glitch'] as const;
+    type StyleKey = typeof validStyles[number];
+    const isValidStyle = (validStyles as readonly string[]).includes(style);
+    const styleKey: StyleKey = isValidStyle ? (style as StyleKey) : 'neoGlow';
     const options = captions[styleKey];
     const caption = options[Math.floor(Math.random() * options.length)];
 
