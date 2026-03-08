@@ -17,14 +17,17 @@ export function RewardsPanel({ memeId, token }: Props) {
   const [claimedBase, setClaimedBase] = useState(false);
   const [claiming, setClaiming] = useState<'sol' | 'base' | null>(null);
 
-  const rewardSol = parseInt(
+  const parsedRewardSol = parseInt(
     process.env.NEXT_PUBLIC_REWARD_PER_MEME_SOL ?? '10',
     10
   );
-  const rewardBase = parseInt(
+  const rewardSol = Number.isFinite(parsedRewardSol) ? parsedRewardSol : 10;
+
+  const parsedRewardBase = parseInt(
     process.env.NEXT_PUBLIC_REWARD_PER_MEME_BASE ?? '10',
     10
   );
+  const rewardBase = Number.isFinite(parsedRewardBase) ? parsedRewardBase : 10;
 
   const handleClaimSolana = async () => {
     if (!solanaKey) return;
@@ -131,7 +134,7 @@ export function RewardsPanel({ memeId, token }: Props) {
       </div>
 
       <p className="text-[10px] text-neoCyan/20 font-mono text-center">
-        Demo mode · Token: {token} · No real transactions in demo
+        No real transactions · Token: {token}
       </p>
     </div>
   );

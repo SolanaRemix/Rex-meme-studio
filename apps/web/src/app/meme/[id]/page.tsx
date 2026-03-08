@@ -48,7 +48,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       'fc:frame': 'vNext',
       'fc:frame:image': imageUrl,
       'fc:frame:button:1': 'Remix',
-      'fc:frame:post_url': `${baseUrl}/api/frame/meme/${id}`,
+      'fc:frame:post_url': `${baseUrl}/api/frame/meme/${encodeURIComponent(id)}`,
     },
   };
 }

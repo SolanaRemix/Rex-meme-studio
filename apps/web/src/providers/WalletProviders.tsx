@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   ConnectionProvider,
   WalletProvider,
@@ -24,9 +24,13 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
 
+// wagmiConfig is module-level for stability across renders.
+// NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID must be set in .env for WalletConnect v2 to work.
+// A placeholder is used here to prevent RainbowKit from throwing during SSR/build; the
+// missing env var is caught at runtime in the useEffect below.
 const wagmiConfig = getDefaultConfig({
   appName: 'Rex Meme Studio',
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? 'rex-meme-studio-default',
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ?? 'MISSING_WALLET_CONNECT_PROJECT_ID',
   chains: [base, mainnet],
   transports: {
     [base.id]: http(
@@ -38,6 +42,18 @@ const wagmiConfig = getDefaultConfig({
 });
 
 export function WalletProviders({ children }: { children: React.ReactNode }) {
+  // Fail clearly when the required WalletConnect project ID is missing.
+  // useEffect ensures this runs only on the client (not during SSR/static generation).
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID) {
+      console.error(
+        '[WalletProviders] NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is not set. ' +
+          'WalletConnect v2 requires a valid project ID from https://cloud.walletconnect.com. ' +
+          'Please set this env var in your .env file before enabling wallet connections.'
+      );
+    }
+  }, []);
+
   const solanaEndpoint =
     process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'mainnet-beta'
       ? 'https://api.mainnet-beta.solana.com'

@@ -79,11 +79,16 @@ export function ExportButtons({
         body: JSON.stringify({ templateId, caption, style, format: 'gif' }),
       });
       const data = (await res.json()) as { stub?: boolean; error?: string };
+      if (!res.ok) {
+        setExportError(data?.error ?? 'GIF export failed. Please try again.');
+        return;
+      }
       if (data.stub) {
-        alert('GIF export is coming soon! 🎬');
+        setExportError('GIF export is coming soon! 🎬');
       }
     } catch (err) {
       console.error('GIF export failed:', err);
+      setExportError('GIF export failed. Please try again.');
     } finally {
       setExporting(null);
     }

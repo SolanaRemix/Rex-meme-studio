@@ -8,6 +8,8 @@ interface NeoToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label?: string;
+  /** Accessible label for screen readers when `label` is not provided */
+  ariaLabel?: string;
   color?: keyof typeof neoColors;
   disabled?: boolean;
 }
@@ -16,6 +18,7 @@ export function NeoToggle({
   checked,
   onChange,
   label,
+  ariaLabel,
   color = 'cyan',
   disabled = false,
 }: NeoToggleProps) {
@@ -40,6 +43,7 @@ export function NeoToggle({
         type="checkbox"
         role="switch"
         aria-checked={checked}
+        aria-label={!label ? ariaLabel : undefined}
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
