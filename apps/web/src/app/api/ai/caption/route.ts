@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
     const options = captions[styleKey];
     const caption = options[Math.floor(Math.random() * options.length)];
 
-    return NextResponse.json({ caption, token, style });
+    // Return the normalized styleKey so clients can trust the response (style may have been
+    // silently fallen back to 'neoGlow' if the requested style was invalid).
+    return NextResponse.json({ caption, token, style: styleKey });
   } catch (err) {
     console.error('[api/ai/caption]', err);
     return NextResponse.json(

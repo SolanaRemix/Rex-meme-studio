@@ -62,12 +62,22 @@ export class SolanaRewardService {
  * - NEXT_PUBLIC_SOLANA_CLUSTER — intentionally public (cluster endpoint is not a secret)
  * Do NOT call this factory from client components; use only from API routes or server-side code.
  */
+const VALID_MODES = new Set<RewardConfig['mode']>(['off', 'demo', 'live']);
+
 export function createSolanaRewardService(): SolanaRewardService {
+  const rawMode = process.env.REWARD_MODE_SOL ?? 'demo';
+  const mode: RewardConfig['mode'] = VALID_MODES.has(rawMode as RewardConfig['mode'])
+    ? (rawMode as RewardConfig['mode'])
+    : 'demo';
+
+  const parsedRewardPerMeme = parseInt(process.env.REWARD_PER_MEME_SOL ?? '', 10);
+  const rewardPerMeme = Number.isFinite(parsedRewardPerMeme) ? parsedRewardPerMeme : 10;
+
   return new SolanaRewardService({
     chain: 'solana',
-    mode: (process.env.REWARD_MODE_SOL ?? 'demo') as RewardConfig['mode'],
+    mode,
     tokenMint: process.env.NEXT_PUBLIC_GXQ_MINT_SOL ?? '',
-    rewardPerMeme: parseInt(process.env.REWARD_PER_MEME_SOL ?? '10', 10),
+    rewardPerMeme,
     rpcUrl: `https://api.${process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'mainnet-beta'}.solana.com`,
   });
 }

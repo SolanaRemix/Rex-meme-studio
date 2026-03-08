@@ -93,7 +93,26 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id') ?? 'demo';
-  const format = (searchParams.get('format') ?? 'svg') as 'png' | 'svg' | 'gif';
+  const rawFormat = searchParams.get('format') ?? 'svg';
+
+  // Validate format against an explicit allowlist
+  const VALID_FORMATS = new Set(['png', 'svg', 'gif']);
+  if (!VALID_FORMATS.has(rawFormat)) {
+    return NextResponse.json(
+      { error: `Invalid format. Must be one of: ${[...VALID_FORMATS].join(', ')}` },
+      { status: 400 }
+    );
+  }
+
+  // GIF is not yet supported in GET (same as POST)
+  if (rawFormat === 'gif') {
+    return NextResponse.json(
+      { error: 'GIF export coming soon', stub: true },
+      { status: 501 }
+    );
+  }
+
+  const format = rawFormat as 'png' | 'svg';
 
   // Use caller-supplied params if present (shared link reconstruction), else fall back to defaults
   const rawStyle = searchParams.get('style') ?? 'neoGlow';

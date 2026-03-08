@@ -68,12 +68,22 @@ export class BaseRewardService {
  * - NEXT_PUBLIC_BASE_RPC_URL — intentionally public (public RPC endpoint is not a secret)
  * Do NOT call this factory from client components; use only from API routes or server-side code.
  */
+const VALID_MODES = new Set<RewardConfig['mode']>(['off', 'demo', 'live']);
+
 export function createBaseRewardService(): BaseRewardService {
+  const rawMode = process.env.REWARD_MODE_BASE ?? 'demo';
+  const mode: RewardConfig['mode'] = VALID_MODES.has(rawMode as RewardConfig['mode'])
+    ? (rawMode as RewardConfig['mode'])
+    : 'demo';
+
+  const parsedRewardPerMeme = parseInt(process.env.REWARD_PER_MEME_BASE ?? '', 10);
+  const rewardPerMeme = Number.isFinite(parsedRewardPerMeme) ? parsedRewardPerMeme : 10;
+
   return new BaseRewardService({
     chain: 'base',
-    mode: (process.env.REWARD_MODE_BASE ?? 'demo') as RewardConfig['mode'],
+    mode,
     tokenMint: process.env.NEXT_PUBLIC_GXQ_TOKEN_BASE ?? '',
-    rewardPerMeme: parseInt(process.env.REWARD_PER_MEME_BASE ?? '10', 10),
+    rewardPerMeme,
     rpcUrl: process.env.NEXT_PUBLIC_BASE_RPC_URL ?? 'https://mainnet.base.org',
   });
 }

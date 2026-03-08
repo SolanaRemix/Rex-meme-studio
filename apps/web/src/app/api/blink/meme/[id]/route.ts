@@ -10,19 +10,23 @@ export async function GET(req: NextRequest, { params }: Params) {
     process.env.NEXT_PUBLIC_SITE_URL ??
     `https://${req.headers.get('host') ?? 'localhost:3000'}`;
 
+  // URL-encode id to prevent injection when id contains special characters
+  const encodedId = encodeURIComponent(id);
+
   const blinkAction = {
     title: `Rex Meme #${id}`,
-    icon: `${baseUrl}/api/meme/render?id=${id}&format=png`,
+    icon: `${baseUrl}/api/meme/render?id=${encodedId}&format=png`,
     description: 'AI-generated meme on Rex Meme Studio',
     label: 'Remix Meme',
     links: {
       actions: [
         {
           label: 'Remix',
-          href: `${baseUrl}/meme/${id}?remix=1`,
+          href: `${baseUrl}/meme/${encodedId}?remix=1`,
         },
         {
           label: 'Share on X',
+          // Use raw id (not encodedId) here since encodeURIComponent will encode the whole inner URL
           href: `https://twitter.com/intent/tweet?text=Check this meme!&url=${encodeURIComponent(`${baseUrl}/meme/${id}`)}`,
         },
       ],
