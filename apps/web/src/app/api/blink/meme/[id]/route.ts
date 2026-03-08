@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 interface Params {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(req: NextRequest, { params }: Params) {
-  const { id } = params;
+  const { id } = await params;
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ??
     `https://${req.headers.get('host') ?? 'localhost:3000'}`;

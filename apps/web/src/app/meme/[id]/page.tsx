@@ -3,12 +3,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 interface Props {
-  params: { id: string };
-  searchParams: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
     templateId?: string;
     caption?: string;
     style?: string;
-  };
+  }>;
 }
 
 /** Build the render URL, forwarding meme params from searchParams if present. */
@@ -30,8 +30,8 @@ function buildRenderUrl(
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { id } = params;
-  const { templateId, caption, style } = searchParams;
+  const { id } = await params;
+  const { templateId, caption, style } = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const imageUrl = buildRenderUrl(baseUrl, id, templateId, caption, style);
 
@@ -54,8 +54,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function MemePage({ params, searchParams }: Props) {
-  const { id } = params;
-  const { templateId, caption, style } = searchParams;
+  const { id } = await params;
+  const { templateId, caption, style } = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const imageUrl = buildRenderUrl(baseUrl, id, templateId, caption, style);
 
