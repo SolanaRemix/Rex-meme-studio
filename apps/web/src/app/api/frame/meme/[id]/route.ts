@@ -17,8 +17,7 @@ function escapeHtml(str: string): string {
 export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    `https://${req.headers.get('host') ?? 'localhost:3000'}`;
+    process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
 
   // Escape id before interpolating into HTML to prevent injection
   const safeId = escapeHtml(id);
