@@ -8,7 +8,8 @@ export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ??
-    `https://${req.headers.get('host') ?? 'localhost:3000'}`;
+    req.nextUrl.origin ??
+    `${req.headers.get('x-forwarded-proto') ?? 'http'}://${req.headers.get('host') ?? 'localhost:3000'}`;
 
   // URL-encode id to prevent injection when id contains special characters
   const encodedId = encodeURIComponent(id);
