@@ -33,7 +33,7 @@ export function renderMemeSvg({ templateId, caption, style }: RenderOptions): st
 
   const template = getTemplate(templateId);
   const token = template.token;
-  const tokenKey = templateId.toLowerCase();
+  const tokenKey = template.id.toLowerCase();
   const emoji = TOKEN_EMOJIS[tokenKey] ?? '🚀';
 
   // Get primary color from the text layer
