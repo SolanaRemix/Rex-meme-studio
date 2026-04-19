@@ -543,7 +543,12 @@ export default function HomePage() {
                   Distribution + Engagement Channels
                 </p>
                 <p className="text-xs font-mono text-neoCyan/50 break-all">
-                  Frame Poster: /api/frame/meme/{memeId}
+                  Frame Poster:{' '}
+                  {memeId
+                    ? typeof window === 'undefined'
+                      ? `/api/frame/meme/${memeId}`
+                      : new URL(`/api/frame/meme/${memeId}`, window.location.origin).toString()
+                    : 'Generate a meme to get a frame poster URL'}
                 </p>
                 <p className="text-xs font-mono text-neoCyan/50 break-all">
                   Blinks Import: /api/blink/create
