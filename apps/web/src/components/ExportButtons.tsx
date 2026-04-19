@@ -12,6 +12,13 @@ interface Props {
   svgContent: string;
 }
 
+interface MetadataInputs {
+  memeId: string;
+  templateId: string;
+  caption: string;
+  style: MemeStyle;
+}
+
 export function ExportButtons({
   memeId,
   templateId,
@@ -24,20 +31,34 @@ export function ExportButtons({
   const [pingResult, setPingResult] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState<string | null>(null);
   const operationInFlightRef = useRef(false);
-  const latestMetadataInputsRef = useRef({ memeId, templateId, caption, style });
+  const latestMetadataInputsRef = useRef<MetadataInputs | null>(null);
 
   useEffect(() => {
+    const currentInputs = { memeId, templateId, caption, style };
     const previousInputs = latestMetadataInputsRef.current;
     if (
-      previousInputs.memeId !== memeId ||
-      previousInputs.templateId !== templateId ||
-      previousInputs.caption !== caption ||
-      previousInputs.style !== style
+      previousInputs &&
+      (previousInputs.memeId !== currentInputs.memeId ||
+        previousInputs.templateId !== currentInputs.templateId ||
+        previousInputs.caption !== currentInputs.caption ||
+        previousInputs.style !== currentInputs.style)
     ) {
       setMetadataJson(null);
     }
-    latestMetadataInputsRef.current = { memeId, templateId, caption, style };
+    latestMetadataInputsRef.current = currentInputs;
   }, [memeId, templateId, caption, style]);
+
+  const startOperation = useCallback((operationId: string): boolean => {
+    if (operationInFlightRef.current) return false;
+    operationInFlightRef.current = true;
+    setExporting(operationId);
+    return true;
+  }, []);
+
+  const finishOperation = useCallback(() => {
+    operationInFlightRef.current = false;
+    setExporting(null);
+  }, []);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -50,9 +71,7 @@ export function ExportButtons({
   }, [svgContent, memeId]);
 
   const handleExportPng = useCallback(async () => {
-    if (operationInFlightRef.current) return;
-    operationInFlightRef.current = true;
-    setExporting('png');
+    if (!startOperation('png')) return;
     setExportError(null);
     try {
       const res = await fetch('/api/meme/render', {
@@ -84,15 +103,12 @@ export function ExportButtons({
       console.error('PNG export failed:', err);
       setExportError('PNG export failed. Try SVG instead.');
     } finally {
-      operationInFlightRef.current = false;
-      setExporting(null);
+      finishOperation();
     }
-  }, [templateId, caption, style, memeId]);
+  }, [templateId, caption, style, memeId, startOperation, finishOperation]);
 
   const handleExportGif = useCallback(async () => {
-    if (operationInFlightRef.current) return;
-    operationInFlightRef.current = true;
-    setExporting('gif');
+    if (!startOperation('gif')) return;
     setExportError(null);
     try {
       const res = await fetch('/api/meme/render', {
@@ -112,10 +128,9 @@ export function ExportButtons({
       console.error('GIF export failed:', err);
       setExportError('GIF export failed. Please try again.');
     } finally {
-      operationInFlightRef.current = false;
-      setExporting(null);
+      finishOperation();
     }
-  }, [templateId, caption, style]);
+  }, [templateId, caption, style, startOperation, finishOperation]);
 
   const handleCopyShareLink = useCallback(() => {
     // Encode meme params in the URL so shared links can reconstruct the meme
@@ -127,9 +142,7 @@ export function ExportButtons({
   }, [memeId, templateId, caption, style]);
 
   const handlePingPlatforms = useCallback(async () => {
-    if (operationInFlightRef.current) return;
-    operationInFlightRef.current = true;
-    setExporting('ping');
+    if (!startOperation('ping')) return;
     setExportError(null);
     setPingResult(null);
     try {
@@ -153,15 +166,12 @@ export function ExportButtons({
       console.error('Platform ping failed:', err);
       setExportError('Platform ping failed. Please try again.');
     } finally {
-      operationInFlightRef.current = false;
-      setExporting(null);
+      finishOperation();
     }
-  }, [memeId, templateId, style]);
+  }, [memeId, templateId, style, startOperation, finishOperation]);
 
   const handleGenerateMetadata = useCallback(async () => {
-    if (operationInFlightRef.current) return;
-    operationInFlightRef.current = true;
-    setExporting('metadata');
+    if (!startOperation('metadata')) return;
     setExportError(null);
     setMetadataJson(null);
     const requestInputs = { memeId, templateId, caption, style };
@@ -176,7 +186,7 @@ export function ExportButtons({
         setExportError(data.error ?? 'Metadata generation failed.');
         return;
       }
-      const latestInputs = latestMetadataInputsRef.current;
+      const latestInputs = latestMetadataInputsRef.current ?? requestInputs;
       if (
         latestInputs.memeId !== requestInputs.memeId ||
         latestInputs.templateId !== requestInputs.templateId ||
@@ -190,10 +200,9 @@ export function ExportButtons({
       console.error('Metadata generation failed:', err);
       setExportError('Metadata generation failed. Please try again.');
     } finally {
-      operationInFlightRef.current = false;
-      setExporting(null);
+      finishOperation();
     }
-  }, [memeId, templateId, caption, style]);
+  }, [memeId, templateId, caption, style, startOperation, finishOperation]);
 
   const handleCopyMetadata = useCallback(() => {
     if (!metadataJson) return;
@@ -219,7 +228,7 @@ export function ExportButtons({
   const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
 
   const isButtonDisabled = (buttonId: string): boolean =>
-    Boolean(exporting) ||
+    exporting !== null ||
     (!!buttonConfigById.get(buttonId)?.requiresMetadata && !metadataJson);
 
   return (
