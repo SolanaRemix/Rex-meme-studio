@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { MemeStyle } from 'meme-engine';
 
@@ -12,6 +12,13 @@ interface Props {
   svgContent: string;
 }
 
+interface MetadataInputs {
+  memeId: string;
+  templateId: string;
+  caption: string;
+  style: MemeStyle;
+}
+
 export function ExportButtons({
   memeId,
   templateId,
@@ -21,6 +28,37 @@ export function ExportButtons({
 }: Props) {
   const [exporting, setExporting] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [pingResult, setPingResult] = useState<string | null>(null);
+  const [metadataJson, setMetadataJson] = useState<string | null>(null);
+  const operationInFlightRef = useRef(false);
+  const latestMetadataInputsRef = useRef<MetadataInputs | null>(null);
+
+  useEffect(() => {
+    const currentInputs = { memeId, templateId, caption, style };
+    const previousInputs = latestMetadataInputsRef.current;
+    if (
+      previousInputs &&
+      (previousInputs.memeId !== currentInputs.memeId ||
+        previousInputs.templateId !== currentInputs.templateId ||
+        previousInputs.caption !== currentInputs.caption ||
+        previousInputs.style !== currentInputs.style)
+    ) {
+      setMetadataJson(null);
+    }
+    latestMetadataInputsRef.current = currentInputs;
+  }, [memeId, templateId, caption, style]);
+
+  const startOperation = useCallback((operationId: string): boolean => {
+    if (operationInFlightRef.current) return false;
+    operationInFlightRef.current = true;
+    setExporting(operationId);
+    return true;
+  }, []);
+
+  const finishOperation = useCallback(() => {
+    operationInFlightRef.current = false;
+    setExporting(null);
+  }, []);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -33,7 +71,7 @@ export function ExportButtons({
   }, [svgContent, memeId]);
 
   const handleExportPng = useCallback(async () => {
-    setExporting('png');
+    if (!startOperation('png')) return;
     setExportError(null);
     try {
       const res = await fetch('/api/meme/render', {
@@ -65,12 +103,12 @@ export function ExportButtons({
       console.error('PNG export failed:', err);
       setExportError('PNG export failed. Try SVG instead.');
     } finally {
-      setExporting(null);
+      finishOperation();
     }
-  }, [templateId, caption, style, memeId]);
+  }, [templateId, caption, style, memeId, startOperation, finishOperation]);
 
   const handleExportGif = useCallback(async () => {
-    setExporting('gif');
+    if (!startOperation('gif')) return;
     setExportError(null);
     try {
       const res = await fetch('/api/meme/render', {
@@ -90,9 +128,9 @@ export function ExportButtons({
       console.error('GIF export failed:', err);
       setExportError('GIF export failed. Please try again.');
     } finally {
-      setExporting(null);
+      finishOperation();
     }
-  }, [templateId, caption, style]);
+  }, [templateId, caption, style, startOperation, finishOperation]);
 
   const handleCopyShareLink = useCallback(() => {
     // Encode meme params in the URL so shared links can reconstruct the meme
@@ -103,12 +141,95 @@ export function ExportButtons({
     navigator.clipboard.writeText(url.toString()).catch(console.error);
   }, [memeId, templateId, caption, style]);
 
+  const handlePingPlatforms = useCallback(async () => {
+    if (!startOperation('ping')) return;
+    setExportError(null);
+    setPingResult(null);
+    try {
+      const res = await fetch('/api/marketing/ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memeId, templateId, style }),
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        delivered?: number;
+        total?: number;
+        error?: string;
+      };
+      if (!res.ok || !data.success) {
+        setExportError(data.error ?? 'Platform ping failed.');
+        return;
+      }
+      setPingResult(`Pinged ${data.delivered ?? 0}/${data.total ?? 0} NFT platforms`);
+    } catch (err) {
+      console.error('Platform ping failed:', err);
+      setExportError('Platform ping failed. Please try again.');
+    } finally {
+      finishOperation();
+    }
+  }, [memeId, templateId, style, startOperation, finishOperation]);
+
+  const handleGenerateMetadata = useCallback(async () => {
+    if (!startOperation('metadata')) return;
+    setExportError(null);
+    setMetadataJson(null);
+    const requestInputs = { memeId, templateId, caption, style };
+    try {
+      const res = await fetch('/api/nft/metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memeId, templateId, caption, style }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setExportError(data.error ?? 'Metadata generation failed.');
+        return;
+      }
+      const latestInputs = latestMetadataInputsRef.current ?? requestInputs;
+      if (
+        latestInputs.memeId !== requestInputs.memeId ||
+        latestInputs.templateId !== requestInputs.templateId ||
+        latestInputs.caption !== requestInputs.caption ||
+        latestInputs.style !== requestInputs.style
+      ) {
+        return;
+      }
+      setMetadataJson(JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error('Metadata generation failed:', err);
+      setExportError('Metadata generation failed. Please try again.');
+    } finally {
+      finishOperation();
+    }
+  }, [memeId, templateId, caption, style, startOperation, finishOperation]);
+
+  const handleCopyMetadata = useCallback(() => {
+    if (!metadataJson) return;
+    navigator.clipboard.writeText(metadataJson).catch(console.error);
+  }, [metadataJson]);
+
   const buttons = [
     { id: 'svg', label: 'SVG', icon: '🎨', onClick: handleExportSvg },
     { id: 'png', label: 'PNG', icon: '🖼️', onClick: handleExportPng },
     { id: 'gif', label: 'GIF', icon: '🎞️', onClick: handleExportGif },
+    { id: 'metadata', label: 'NFT Metadata', icon: '🧬', onClick: handleGenerateMetadata },
     { id: 'share', label: 'Copy Link', icon: '🔗', onClick: handleCopyShareLink },
+    { id: 'ping', label: 'Ping Platforms', icon: '📣', onClick: handlePingPlatforms },
+    {
+      id: 'copy-metadata',
+      label: 'Copy Metadata',
+      icon: '📋',
+      onClick: handleCopyMetadata,
+      requiresMetadata: true,
+    },
   ];
+
+  const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
+
+  const isButtonDisabled = (buttonId: string): boolean =>
+    exporting !== null ||
+    (!!buttonConfigById.get(buttonId)?.requiresMetadata && !metadataJson);
 
   return (
     <div className="space-y-2">
@@ -117,7 +238,7 @@ export function ExportButtons({
           <motion.button
             key={btn.id}
             onClick={btn.onClick}
-            disabled={exporting === btn.id}
+            disabled={isButtonDisabled(btn.id)}
             className="neo-button text-xs px-4 py-2 flex items-center gap-1.5"
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.03 }}
@@ -129,6 +250,12 @@ export function ExportButtons({
       </div>
       {exportError && (
         <p className="text-xs font-mono text-red-400/80">{exportError}</p>
+      )}
+      {pingResult && <p className="text-xs font-mono text-neoLime/80">{pingResult}</p>}
+      {metadataJson && (
+        <p className="text-xs font-mono text-neoCyan/60">
+          Unique metadata generated for on-chain minting.
+        </p>
       )}
     </div>
   );

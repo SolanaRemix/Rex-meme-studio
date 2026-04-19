@@ -15,6 +15,71 @@ const SUPPORTED_TOKENS = (
   process.env.NEXT_PUBLIC_SUPPORTED_TOKENS ?? 'BONK,WIF,MEW,JUP,PENGU'
 ).split(',');
 
+type DashboardTab = 'templates' | 'marketplace' | 'launchpad';
+
+interface PremadeTemplate {
+  id: string;
+  name: string;
+  token: string;
+  prompt: string;
+  style: MemeStyle;
+}
+
+const PREMADE_TEMPLATES: PremadeTemplate[] = [
+  {
+    id: 'bonk',
+    name: 'BONK Breakout',
+    token: 'BONK',
+    prompt: 'BONK holders when the chart finally breaks resistance',
+    style: 'flash',
+  },
+  {
+    id: 'wif',
+    name: 'WIF Weekend Pump',
+    token: 'WIF',
+    prompt: 'Weekend traders watching WIF make a surprise move',
+    style: 'neoGlow',
+  },
+  {
+    id: 'mew',
+    name: 'MEW Laser Eyes',
+    token: 'MEW',
+    prompt: 'MEW community adding laser eyes before launch',
+    style: 'glitch',
+  },
+  {
+    id: 'jup',
+    name: 'JUP Routing Alpha',
+    token: 'JUP',
+    prompt: 'JUP power users routing the cleanest trade path',
+    style: 'neoGlow',
+  },
+  {
+    id: 'pengu',
+    name: 'PENGU Freeze Frame',
+    token: 'PENGU',
+    prompt: 'PENGU whales sliding into the timeline at max speed',
+    style: 'flash',
+  },
+];
+
+const MARKETPLACE_LISTINGS = Array.from({ length: 40 }, (_, index) => {
+  const template = PREMADE_TEMPLATES[index % PREMADE_TEMPLATES.length];
+  return {
+    id: index + 1,
+    title: `${template.name} #${index + 1}`,
+    creator: `creator_${(index % 12) + 1}`,
+    token: template.token,
+    price: ((index % 9) + 1) * 0.05,
+    likes: 12 + index,
+    comments: 3 + (index % 7),
+  };
+});
+
+const INITIAL_LISTING_STATS = Object.fromEntries(
+  MARKETPLACE_LISTINGS.map((listing) => [listing.id, { likes: listing.likes, comments: listing.comments }])
+) as Record<number, { likes: number; comments: number }>;
+
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState<string>(
     SUPPORTED_TOKENS[0]
@@ -30,6 +95,12 @@ export default function HomePage() {
   );
   const [generatedSvg, setGeneratedSvg] = useState<string | null>(null);
   const [showRewards, setShowRewards] = useState(false);
+  const [activeDashboard, setActiveDashboard] = useState<DashboardTab>('templates');
+  const [likedListings, setLikedListings] = useState<Record<number, boolean>>({});
+  const [followedCreators, setFollowedCreators] = useState<Record<string, boolean>>({});
+  const [listingStats, setListingStats] = useState<Record<number, { likes: number; comments: number }>>(
+    INITIAL_LISTING_STATS
+  );
 
   // Apply ?token= from URL (e.g. from Solana Blink deep links)
   useEffect(() => {
@@ -74,6 +145,40 @@ export default function HomePage() {
       setIsGenerating(false);
     }
   }, [prompt, selectedToken, style]);
+
+  const handleApplyTemplate = useCallback((template: PremadeTemplate) => {
+    setSelectedToken(template.token);
+    setStyle(template.style);
+    setPrompt(template.prompt);
+  }, []);
+
+  const toggleLike = useCallback((listingId: number) => {
+    setLikedListings((prev) => {
+      const isLiked = !!prev[listingId];
+      setListingStats((current) => ({
+        ...current,
+        [listingId]: {
+          ...current[listingId],
+          likes: current[listingId].likes + (isLiked ? -1 : 1),
+        },
+      }));
+      return { ...prev, [listingId]: !isLiked };
+    });
+  }, []);
+
+  const toggleFollow = useCallback((creator: string) => {
+    setFollowedCreators((prev) => ({ ...prev, [creator]: !prev[creator] }));
+  }, []);
+
+  const addComment = useCallback((listingId: number) => {
+    setListingStats((current) => ({
+      ...current,
+      [listingId]: {
+        ...current[listingId],
+        comments: current[listingId].comments + 1,
+      },
+    }));
+  }, []);
 
   return (
     <main className="min-h-screen bg-neoDark relative overflow-hidden">
@@ -281,6 +386,199 @@ export default function HomePage() {
             </AnimatePresence>
           </motion.div>
         </div>
+
+        <section className="mt-12 neo-card p-6 space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-mono font-bold text-neoCyan uppercase tracking-widest">
+                Studio Dashboards
+              </h2>
+              <p className="text-xs font-mono text-neoCyan/40 mt-1">
+                Responsive Web/Mobile/Tablet views · Fast one-tap NFT metadata code generation
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ['templates', 'Templates'],
+                ['marketplace', 'Marketplace + Social'],
+                ['launchpad', 'Launchpad'],
+              ] as const).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveDashboard(tab)}
+                  className={`px-3 py-2 text-xs rounded-lg font-mono border transition-all ${
+                    activeDashboard === tab
+                      ? 'border-neoCyan/60 text-neoCyan bg-neoCyan/10'
+                      : 'border-neoCyan/20 text-neoCyan/60 hover:border-neoCyan/40'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {activeDashboard === 'templates' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="templates-dashboard">
+              {PREMADE_TEMPLATES.map((template) => (
+                <div
+                  key={template.id}
+                  className="rounded-xl border border-neoCyan/20 bg-neoCyan/5 p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-mono text-neoCyan font-bold">{template.name}</p>
+                    <span className="text-[10px] px-2 py-1 rounded bg-neoDark/60 text-neoMagenta font-mono uppercase">
+                      {template.style}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-neoCyan/50">{template.prompt}</p>
+                  <button
+                    className="neo-button text-xs px-3 py-2"
+                    onClick={() => handleApplyTemplate(template)}
+                  >
+                    Use Template ({template.token})
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeDashboard === 'marketplace' && (
+            <div className="space-y-4" id="marketplace-dashboard">
+              <p className="text-xs font-mono text-neoCyan/40">
+                Permissionless listing board · {MARKETPLACE_LISTINGS.length} active slots
+              </p>
+              <div className="max-h-[32rem] overflow-y-auto pr-1 grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {MARKETPLACE_LISTINGS.map((listing) => {
+                  const stats = listingStats[listing.id] ?? {
+                    likes: listing.likes,
+                    comments: listing.comments,
+                  };
+                  const isLiked = Boolean(likedListings[listing.id]);
+                  const isFollowing = Boolean(followedCreators[listing.creator]);
+
+                  return (
+                    <div
+                      key={listing.id}
+                      className="rounded-xl border border-neoMagenta/20 bg-neoMagenta/5 p-4 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-mono text-neoMagenta font-semibold">
+                            {listing.title}
+                          </p>
+                          <p className="text-xs font-mono text-neoCyan/40 mt-1">
+                            {listing.token} · by @{listing.creator}
+                          </p>
+                        </div>
+                        <p className="text-xs font-mono text-neoCyan/70">
+                          {listing.price.toFixed(2)} ◎
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs font-mono">
+                        <button
+                          onClick={() => toggleLike(listing.id)}
+                          className={`px-2.5 py-1 rounded border ${
+                            isLiked
+                              ? 'border-neoLime/40 text-neoLime'
+                              : 'border-neoCyan/20 text-neoCyan/70'
+                          }`}
+                        >
+                          ❤️ {stats.likes}
+                        </button>
+                        <button
+                          onClick={() => toggleFollow(listing.creator)}
+                          className={`px-2.5 py-1 rounded border ${
+                            isFollowing
+                              ? 'border-neoLime/40 text-neoLime'
+                              : 'border-neoMagenta/30 text-neoMagenta'
+                          }`}
+                        >
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                        <button
+                          onClick={() => addComment(listing.id)}
+                          className="px-2.5 py-1 rounded border border-neoCyan/20 text-neoCyan/70"
+                        >
+                          💬 {stats.comments}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeDashboard === 'launchpad' && (
+            <div className="space-y-5" id="launchpad-dashboard">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  {
+                    role: 'Users',
+                    features: 'Create memes, list NFTs, and earn rewards',
+                  },
+                  {
+                    role: 'Developers',
+                    features: 'Use frame/blink APIs and permissionless import endpoints',
+                  },
+                  {
+                    role: 'Admins',
+                    features: 'Track launch campaigns and platform pings on a single node',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.role}
+                    className="rounded-xl border border-neoCyan/20 bg-neoDark/60 p-4"
+                  >
+                    <p className="text-xs font-mono uppercase tracking-widest text-neoCyan/60">
+                      {item.role}
+                    </p>
+                    <p className="text-sm font-mono text-white mt-2">{item.features}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-neoMagenta/20 bg-neoMagenta/5 p-4 space-y-2">
+                <p className="text-xs font-mono uppercase tracking-widest text-neoMagenta/70">
+                  Distribution + Engagement Channels
+                </p>
+                <p className="text-xs font-mono text-neoCyan/50 break-all">
+                  Frame Poster:{' '}
+                  {memeId
+                    ? typeof window === 'undefined'
+                      ? `/api/frame/meme/${memeId}`
+                      : new URL(`/api/frame/meme/${memeId}`, window.location.origin).toString()
+                    : 'Generate a meme to get a frame poster URL'}
+                </p>
+                <p className="text-xs font-mono text-neoCyan/50 break-all">
+                  Blinks Import: /api/blink/create
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2">
+                  {[
+                    ['Farcaster', `https://warpcast.com/~/compose`],
+                    ['ZORA', 'https://zora.co/create'],
+                    ['Lens', 'https://lens.xyz'],
+                    ['Blinks', '/api/blink/create'],
+                    ['X', 'https://x.com/compose/tweet'],
+                  ].map(([name, href]) => (
+                    <a
+                      key={name}
+                      href={href}
+                      target={href.startsWith('http') ? '_blank' : undefined}
+                      rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      className="px-2 py-2 rounded border border-neoCyan/20 text-[11px] text-center font-mono text-neoCyan/70 hover:border-neoCyan/40"
+                    >
+                      {name}
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs font-mono text-neoCyan/30">
+                  Generate unique metadata in Export, then share/ping collections across Farcaster, ZORA, Lens, Blinks, and X.
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
 
         {/* Footer */}
         <footer className="mt-16 text-center">
