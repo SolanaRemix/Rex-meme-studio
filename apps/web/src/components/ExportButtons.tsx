@@ -23,11 +23,11 @@ export function ExportButtons({
   const [exportError, setExportError] = useState<string | null>(null);
   const [pingResult, setPingResult] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState<string | null>(null);
-  const exportInFlightRef = useRef(false);
-  const metadataInputsRef = useRef({ memeId, templateId, caption, style });
+  const operationInFlightRef = useRef(false);
+  const latestMetadataInputsRef = useRef({ memeId, templateId, caption, style });
 
   useEffect(() => {
-    const previousInputs = metadataInputsRef.current;
+    const previousInputs = latestMetadataInputsRef.current;
     if (
       previousInputs.memeId !== memeId ||
       previousInputs.templateId !== templateId ||
@@ -35,8 +35,8 @@ export function ExportButtons({
       previousInputs.style !== style
     ) {
       setMetadataJson(null);
-      metadataInputsRef.current = { memeId, templateId, caption, style };
     }
+    latestMetadataInputsRef.current = { memeId, templateId, caption, style };
   }, [memeId, templateId, caption, style]);
 
   const handleExportSvg = useCallback(() => {
@@ -50,8 +50,8 @@ export function ExportButtons({
   }, [svgContent, memeId]);
 
   const handleExportPng = useCallback(async () => {
-    if (exportInFlightRef.current) return;
-    exportInFlightRef.current = true;
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
     setExporting('png');
     setExportError(null);
     try {
@@ -84,14 +84,14 @@ export function ExportButtons({
       console.error('PNG export failed:', err);
       setExportError('PNG export failed. Try SVG instead.');
     } finally {
-      exportInFlightRef.current = false;
+      operationInFlightRef.current = false;
       setExporting(null);
     }
   }, [templateId, caption, style, memeId]);
 
   const handleExportGif = useCallback(async () => {
-    if (exportInFlightRef.current) return;
-    exportInFlightRef.current = true;
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
     setExporting('gif');
     setExportError(null);
     try {
@@ -112,7 +112,7 @@ export function ExportButtons({
       console.error('GIF export failed:', err);
       setExportError('GIF export failed. Please try again.');
     } finally {
-      exportInFlightRef.current = false;
+      operationInFlightRef.current = false;
       setExporting(null);
     }
   }, [templateId, caption, style]);
@@ -127,8 +127,8 @@ export function ExportButtons({
   }, [memeId, templateId, caption, style]);
 
   const handlePingPlatforms = useCallback(async () => {
-    if (exportInFlightRef.current) return;
-    exportInFlightRef.current = true;
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
     setExporting('ping');
     setExportError(null);
     setPingResult(null);
@@ -153,17 +153,18 @@ export function ExportButtons({
       console.error('Platform ping failed:', err);
       setExportError('Platform ping failed. Please try again.');
     } finally {
-      exportInFlightRef.current = false;
+      operationInFlightRef.current = false;
       setExporting(null);
     }
   }, [memeId, templateId, style]);
 
   const handleGenerateMetadata = useCallback(async () => {
-    if (exportInFlightRef.current) return;
-    exportInFlightRef.current = true;
+    if (operationInFlightRef.current) return;
+    operationInFlightRef.current = true;
     setExporting('metadata');
     setExportError(null);
     setMetadataJson(null);
+    const requestInputs = { memeId, templateId, caption, style };
     try {
       const res = await fetch('/api/nft/metadata', {
         method: 'POST',
@@ -175,12 +176,21 @@ export function ExportButtons({
         setExportError(data.error ?? 'Metadata generation failed.');
         return;
       }
+      const latestInputs = latestMetadataInputsRef.current;
+      if (
+        latestInputs.memeId !== requestInputs.memeId ||
+        latestInputs.templateId !== requestInputs.templateId ||
+        latestInputs.caption !== requestInputs.caption ||
+        latestInputs.style !== requestInputs.style
+      ) {
+        return;
+      }
       setMetadataJson(JSON.stringify(data, null, 2));
     } catch (err) {
       console.error('Metadata generation failed:', err);
       setExportError('Metadata generation failed. Please try again.');
     } finally {
-      exportInFlightRef.current = false;
+      operationInFlightRef.current = false;
       setExporting(null);
     }
   }, [memeId, templateId, caption, style]);
