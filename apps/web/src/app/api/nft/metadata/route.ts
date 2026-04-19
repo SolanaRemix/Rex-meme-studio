@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       schema: 'rex-meme-studio-nft-metadata-v1',
       metadataId,
+      // Compact deterministic identifier used by UI/indexing flows.
+      // Keep this short while preserving enough entropy from metadataId.
       tokenId: metadataId.slice(0, 16),
       name: `Rex Meme #${memeId}`,
       description: caption,
@@ -63,6 +65,8 @@ export async function POST(req: NextRequest) {
         lens: `https://lens.xyz`,
       },
       onchain: {
+        // `target` describes the intended minting path for downstream integrators.
+        // It is metadata only and does not execute minting in this endpoint.
         solana: { target: 'compressed-nft-or-metaplex', metadataHash: metadataId },
         base: { target: 'erc721-or-erc1155', metadataHash: metadataId },
       },

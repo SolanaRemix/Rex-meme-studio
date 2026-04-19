@@ -177,6 +177,9 @@ export function ExportButtons({
     },
   ];
 
+  const isButtonDisabled = (buttonId: string): boolean =>
+    exporting === buttonId || (buttonId === 'copy-metadata' && !metadataJson);
+
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -184,7 +187,7 @@ export function ExportButtons({
           <motion.button
             key={btn.id}
             onClick={btn.onClick}
-            disabled={exporting === btn.id || (btn.id === 'copy-metadata' && !metadataJson)}
+            disabled={isButtonDisabled(btn.id)}
             className="neo-button text-xs px-4 py-2 flex items-center gap-1.5"
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.03 }}
