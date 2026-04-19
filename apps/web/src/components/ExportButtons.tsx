@@ -24,12 +24,20 @@ export function ExportButtons({
   const [pingResult, setPingResult] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState<string | null>(null);
   const exportInFlightRef = useRef(false);
+  const metadataInputsRef = useRef({ memeId, templateId, caption, style });
 
   useEffect(() => {
-    if (metadataJson) {
+    const previousInputs = metadataInputsRef.current;
+    if (
+      previousInputs.memeId !== memeId ||
+      previousInputs.templateId !== templateId ||
+      previousInputs.caption !== caption ||
+      previousInputs.style !== style
+    ) {
       setMetadataJson(null);
+      metadataInputsRef.current = { memeId, templateId, caption, style };
     }
-  }, [memeId, templateId, caption, style, metadataJson]);
+  }, [memeId, templateId, caption, style]);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
