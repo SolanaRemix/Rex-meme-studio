@@ -21,6 +21,7 @@ export function ExportButtons({
 }: Props) {
   const [exporting, setExporting] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [pingResult, setPingResult] = useState<string | null>(null);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -103,11 +104,41 @@ export function ExportButtons({
     navigator.clipboard.writeText(url.toString()).catch(console.error);
   }, [memeId, templateId, caption, style]);
 
+  const handlePingPlatforms = useCallback(async () => {
+    setExporting('ping');
+    setExportError(null);
+    setPingResult(null);
+    try {
+      const res = await fetch('/api/marketing/ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memeId, templateId, style }),
+      });
+      const data = (await res.json()) as {
+        success?: boolean;
+        delivered?: number;
+        total?: number;
+        error?: string;
+      };
+      if (!res.ok || !data.success) {
+        setExportError(data.error ?? 'Platform ping failed.');
+        return;
+      }
+      setPingResult(`Pinged ${data.delivered ?? 0}/${data.total ?? 0} NFT platforms`);
+    } catch (err) {
+      console.error('Platform ping failed:', err);
+      setExportError('Platform ping failed. Please try again.');
+    } finally {
+      setExporting(null);
+    }
+  }, [memeId, templateId, style]);
+
   const buttons = [
     { id: 'svg', label: 'SVG', icon: '🎨', onClick: handleExportSvg },
     { id: 'png', label: 'PNG', icon: '🖼️', onClick: handleExportPng },
     { id: 'gif', label: 'GIF', icon: '🎞️', onClick: handleExportGif },
     { id: 'share', label: 'Copy Link', icon: '🔗', onClick: handleCopyShareLink },
+    { id: 'ping', label: 'Ping Platforms', icon: '📣', onClick: handlePingPlatforms },
   ];
 
   return (
@@ -130,6 +161,7 @@ export function ExportButtons({
       {exportError && (
         <p className="text-xs font-mono text-red-400/80">{exportError}</p>
       )}
+      {pingResult && <p className="text-xs font-mono text-neoLime/80">{pingResult}</p>}
     </div>
   );
 }

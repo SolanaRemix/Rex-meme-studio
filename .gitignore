@@ -10,3 +10,7 @@ dist
 out/
 coverage/
 .vercel
+packages/design-system/src/**/*.js
+packages/design-system/src/**/*.js.map
+packages/design-system/src/**/*.d.ts
+packages/design-system/src/**/*.d.ts.map
