@@ -179,9 +179,10 @@ export function ExportButtons({
   ];
 
   const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
+  const isAnyExportInFlight = exporting !== null;
 
   const isButtonDisabled = (buttonId: string): boolean =>
-    exporting === buttonId ||
+    isAnyExportInFlight ||
     (!!buttonConfigById.get(buttonId)?.requiresMetadata && !metadataJson);
 
   return (
