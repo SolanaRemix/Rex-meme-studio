@@ -12,7 +12,7 @@ const PLATFORM_TARGETS = [
 ];
 
 function isValidId(input: string): boolean {
-  return /^[a-zA-Z0-9_-]{3,64}$/.test(input);
+  return /^[a-zA-Z0-9_]{3,64}$/.test(input);
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const memeId = body.memeId?.trim() ?? '';
     if (!isValidId(memeId)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid memeId. Use 3-64 alphanumeric characters.' },
+        { success: false, error: 'Invalid memeId. Use 3-64 alphanumeric/underscore characters.' },
         { status: 400 }
       );
     }

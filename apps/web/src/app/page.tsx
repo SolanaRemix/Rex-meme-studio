@@ -76,6 +76,10 @@ const MARKETPLACE_LISTINGS = Array.from({ length: 40 }, (_, index) => {
   };
 });
 
+const INITIAL_LISTING_STATS = Object.fromEntries(
+  MARKETPLACE_LISTINGS.map((listing) => [listing.id, { likes: listing.likes, comments: listing.comments }])
+) as Record<number, { likes: number; comments: number }>;
+
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState<string>(
     SUPPORTED_TOKENS[0]
@@ -95,13 +99,7 @@ export default function HomePage() {
   const [likedListings, setLikedListings] = useState<Record<number, boolean>>({});
   const [followedCreators, setFollowedCreators] = useState<Record<string, boolean>>({});
   const [listingStats, setListingStats] = useState<Record<number, { likes: number; comments: number }>>(
-    () =>
-      Object.fromEntries(
-        MARKETPLACE_LISTINGS.map((listing) => [
-          listing.id,
-          { likes: listing.likes, comments: listing.comments },
-        ])
-      )
+    INITIAL_LISTING_STATS
   );
 
   // Apply ?token= from URL (e.g. from Solana Blink deep links)
@@ -156,7 +154,7 @@ export default function HomePage() {
 
   const toggleLike = useCallback((listingId: number) => {
     setLikedListings((prev) => {
-      const isLiked = Boolean(prev[listingId]);
+      const isLiked = !!prev[listingId];
       setListingStats((current) => ({
         ...current,
         [listingId]: {
