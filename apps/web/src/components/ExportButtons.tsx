@@ -22,6 +22,7 @@ export function ExportButtons({
   const [exporting, setExporting] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [pingResult, setPingResult] = useState<string | null>(null);
+  const [metadataJson, setMetadataJson] = useState<string | null>(null);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -133,12 +134,47 @@ export function ExportButtons({
     }
   }, [memeId, templateId, style]);
 
+  const handleGenerateMetadata = useCallback(async () => {
+    setExporting('metadata');
+    setExportError(null);
+    try {
+      const res = await fetch('/api/nft/metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memeId, templateId, caption, style }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setExportError(data.error ?? 'Metadata generation failed.');
+        return;
+      }
+      setMetadataJson(JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error('Metadata generation failed:', err);
+      setExportError('Metadata generation failed. Please try again.');
+    } finally {
+      setExporting(null);
+    }
+  }, [memeId, templateId, caption, style]);
+
+  const handleCopyMetadata = useCallback(() => {
+    if (!metadataJson) return;
+    navigator.clipboard.writeText(metadataJson).catch(console.error);
+  }, [metadataJson]);
+
   const buttons = [
     { id: 'svg', label: 'SVG', icon: '🎨', onClick: handleExportSvg },
     { id: 'png', label: 'PNG', icon: '🖼️', onClick: handleExportPng },
     { id: 'gif', label: 'GIF', icon: '🎞️', onClick: handleExportGif },
+    { id: 'metadata', label: 'NFT Metadata', icon: '🧬', onClick: handleGenerateMetadata },
     { id: 'share', label: 'Copy Link', icon: '🔗', onClick: handleCopyShareLink },
     { id: 'ping', label: 'Ping Platforms', icon: '📣', onClick: handlePingPlatforms },
+    {
+      id: 'copy-metadata',
+      label: 'Copy Metadata',
+      icon: '📋',
+      onClick: handleCopyMetadata,
+    },
   ];
 
   return (
@@ -148,7 +184,7 @@ export function ExportButtons({
           <motion.button
             key={btn.id}
             onClick={btn.onClick}
-            disabled={exporting === btn.id}
+            disabled={exporting === btn.id || (btn.id === 'copy-metadata' && !metadataJson)}
             className="neo-button text-xs px-4 py-2 flex items-center gap-1.5"
             whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.03 }}
@@ -162,6 +198,11 @@ export function ExportButtons({
         <p className="text-xs font-mono text-red-400/80">{exportError}</p>
       )}
       {pingResult && <p className="text-xs font-mono text-neoLime/80">{pingResult}</p>}
+      {metadataJson && (
+        <p className="text-xs font-mono text-neoCyan/60">
+          Unique metadata generated for on-chain minting.
+        </p>
+      )}
     </div>
   );
 }

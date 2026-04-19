@@ -394,7 +394,7 @@ export default function HomePage() {
                 Studio Dashboards
               </h2>
               <p className="text-xs font-mono text-neoCyan/40 mt-1">
-                Responsive Web/Mobile/Tablet views · Marketplace supports up to 40 listings
+                Responsive Web/Mobile/Tablet views · Fast one-tap NFT metadata code generation
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -540,7 +540,7 @@ export default function HomePage() {
               </div>
               <div className="rounded-xl border border-neoMagenta/20 bg-neoMagenta/5 p-4 space-y-2">
                 <p className="text-xs font-mono uppercase tracking-widest text-neoMagenta/70">
-                  Farcaster + Blink Import
+                  Distribution + Engagement Channels
                 </p>
                 <p className="text-xs font-mono text-neoCyan/50 break-all">
                   Frame Poster: /api/frame/meme/{memeId}
@@ -548,8 +548,27 @@ export default function HomePage() {
                 <p className="text-xs font-mono text-neoCyan/50 break-all">
                   Blinks Import: /api/blink/create
                 </p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2">
+                  {[
+                    ['Farcaster', `https://warpcast.com/~/compose`],
+                    ['ZORA', 'https://zora.co/create'],
+                    ['Lens', 'https://lens.xyz'],
+                    ['Blinks', '/api/blink/create'],
+                    ['X', 'https://x.com/compose/tweet'],
+                  ].map(([name, href]) => (
+                    <a
+                      key={name}
+                      href={href}
+                      target={href.startsWith('http') ? '_blank' : undefined}
+                      rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      className="px-2 py-2 rounded border border-neoCyan/20 text-[11px] text-center font-mono text-neoCyan/70 hover:border-neoCyan/40"
+                    >
+                      {name}
+                    </a>
+                  ))}
+                </div>
                 <p className="text-xs font-mono text-neoCyan/30">
-                  Use export actions to ping platform feeds right after meme generation.
+                  Generate unique metadata in Export, then share/ping collections across Farcaster, ZORA, Lens, Blinks, and X.
                 </p>
               </div>
             </div>

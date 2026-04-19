@@ -12,7 +12,7 @@ REX Meme Studio is a modular monorepo for flash-style NFT meme generation, shari
 - Dynamic SVG/PNG meme rendering on Unix-based environments
 - Flash/NeoGlow/Glitch visual effects
 - Premade NFT templates for one-click setup
-- Export actions: SVG, PNG, GIF stub, share links
+- Export actions: SVG, PNG, GIF stub, share links, unique NFT metadata JSON
 
 ### Marketplace + Social
 - Marketplace dashboard with **up to 40 listings**
@@ -28,6 +28,7 @@ REX Meme Studio is a modular monorepo for flash-style NFT meme generation, shari
 - Farcaster frame poster endpoints
 - Blinks-friendly import endpoints
 - Post-generation **platform ping API** for marketing fan-out automation
+- Launchpad engagement shortcuts for **Farcaster, ZORA, Lens, Blinks, and X**
 
 ---
 
@@ -42,6 +43,9 @@ REX Meme Studio is a modular monorepo for flash-style NFT meme generation, shari
 ### Launchpad Dashboard
 ![Launchpad dashboard](docs/screenshots/launchpad-dashboard.png)
 
+### Cross-platform Metadata + Engagement View
+![Cross-platform metadata and engagement dashboard](docs/screenshots/cross-platform-metadata-launchpad.png)
+
 ---
 
 ## 🔗 Integration Endpoints
@@ -51,6 +55,7 @@ REX Meme Studio is a modular monorepo for flash-style NFT meme generation, shari
 - Farcaster frame poster: `GET /api/frame/meme/:id`
 - Meme renderer: `GET|POST /api/meme/render`
 - Marketing ping automation: `POST /api/marketing/ping`
+- Unique NFT metadata generator: `POST /api/nft/metadata`
 
 ---
 
