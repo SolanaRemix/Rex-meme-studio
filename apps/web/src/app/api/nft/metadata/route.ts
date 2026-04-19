@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid style' }, { status: 400 });
     }
 
+    // Nonce guarantees uniqueness even when payload fields are identical.
+    // We return it so clients can reproduce/audit metadataId derivation.
     const nonce = randomUUID();
     const metadataId = createHash('sha256')
       .update(`${memeId}:${templateId}:${caption}:${style}:${nonce}`)
@@ -46,7 +48,8 @@ export async function POST(req: NextRequest) {
       schema: 'rex-meme-studio-nft-metadata-v1',
       metadataId,
       // Compact deterministic identifier used by UI/indexing flows.
-      // Keep 128 bits (32 hex chars) to preserve strong uniqueness guarantees.
+      // Keep 128 bits (32 hex chars) from the 256-bit metadataId hash.
+      // This preserves strong uniqueness while staying shorter for UIs.
       tokenId: metadataId.slice(0, 32),
       name: `Rex Meme #${memeId}`,
       description: caption,

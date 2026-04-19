@@ -178,9 +178,11 @@ export function ExportButtons({
     },
   ];
 
+  const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
+
   const isButtonDisabled = (buttonId: string): boolean =>
     exporting === buttonId ||
-    (!!buttons.find((button) => button.id === buttonId)?.requiresMetadata && !metadataJson);
+    (!!buttonConfigById.get(buttonId)?.requiresMetadata && !metadataJson);
 
   return (
     <div className="space-y-2">
