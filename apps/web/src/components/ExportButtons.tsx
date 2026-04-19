@@ -24,11 +24,12 @@ export function ExportButtons({
   const [pingResult, setPingResult] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState<string | null>(null);
   const exportInFlightRef = useRef(false);
-  const [isAnyExportInFlight, setIsAnyExportInFlight] = useState(false);
 
   useEffect(() => {
-    setMetadataJson(null);
-  }, [memeId, templateId, caption, style]);
+    if (metadataJson) {
+      setMetadataJson(null);
+    }
+  }, [memeId, templateId, caption, style, metadataJson]);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -43,7 +44,6 @@ export function ExportButtons({
   const handleExportPng = useCallback(async () => {
     if (exportInFlightRef.current) return;
     exportInFlightRef.current = true;
-    setIsAnyExportInFlight(true);
     setExporting('png');
     setExportError(null);
     try {
@@ -77,7 +77,6 @@ export function ExportButtons({
       setExportError('PNG export failed. Try SVG instead.');
     } finally {
       exportInFlightRef.current = false;
-      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [templateId, caption, style, memeId]);
@@ -85,7 +84,6 @@ export function ExportButtons({
   const handleExportGif = useCallback(async () => {
     if (exportInFlightRef.current) return;
     exportInFlightRef.current = true;
-    setIsAnyExportInFlight(true);
     setExporting('gif');
     setExportError(null);
     try {
@@ -107,7 +105,6 @@ export function ExportButtons({
       setExportError('GIF export failed. Please try again.');
     } finally {
       exportInFlightRef.current = false;
-      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [templateId, caption, style]);
@@ -124,7 +121,6 @@ export function ExportButtons({
   const handlePingPlatforms = useCallback(async () => {
     if (exportInFlightRef.current) return;
     exportInFlightRef.current = true;
-    setIsAnyExportInFlight(true);
     setExporting('ping');
     setExportError(null);
     setPingResult(null);
@@ -150,7 +146,6 @@ export function ExportButtons({
       setExportError('Platform ping failed. Please try again.');
     } finally {
       exportInFlightRef.current = false;
-      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [memeId, templateId, style]);
@@ -158,7 +153,6 @@ export function ExportButtons({
   const handleGenerateMetadata = useCallback(async () => {
     if (exportInFlightRef.current) return;
     exportInFlightRef.current = true;
-    setIsAnyExportInFlight(true);
     setExporting('metadata');
     setExportError(null);
     setMetadataJson(null);
@@ -179,7 +173,6 @@ export function ExportButtons({
       setExportError('Metadata generation failed. Please try again.');
     } finally {
       exportInFlightRef.current = false;
-      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [memeId, templateId, caption, style]);
@@ -208,7 +201,7 @@ export function ExportButtons({
   const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
 
   const isButtonDisabled = (buttonId: string): boolean =>
-    isAnyExportInFlight ||
+    Boolean(exporting) ||
     (!!buttonConfigById.get(buttonId)?.requiresMetadata && !metadataJson);
 
   return (
