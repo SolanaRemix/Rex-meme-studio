@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { MemeStyle } from 'meme-engine';
 
@@ -23,6 +23,12 @@ export function ExportButtons({
   const [exportError, setExportError] = useState<string | null>(null);
   const [pingResult, setPingResult] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState<string | null>(null);
+  const exportInFlightRef = useRef(false);
+  const [isAnyExportInFlight, setIsAnyExportInFlight] = useState(false);
+
+  useEffect(() => {
+    setMetadataJson(null);
+  }, [memeId, templateId, caption, style]);
 
   const handleExportSvg = useCallback(() => {
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
@@ -35,6 +41,9 @@ export function ExportButtons({
   }, [svgContent, memeId]);
 
   const handleExportPng = useCallback(async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setIsAnyExportInFlight(true);
     setExporting('png');
     setExportError(null);
     try {
@@ -67,11 +76,16 @@ export function ExportButtons({
       console.error('PNG export failed:', err);
       setExportError('PNG export failed. Try SVG instead.');
     } finally {
+      exportInFlightRef.current = false;
+      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [templateId, caption, style, memeId]);
 
   const handleExportGif = useCallback(async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setIsAnyExportInFlight(true);
     setExporting('gif');
     setExportError(null);
     try {
@@ -92,6 +106,8 @@ export function ExportButtons({
       console.error('GIF export failed:', err);
       setExportError('GIF export failed. Please try again.');
     } finally {
+      exportInFlightRef.current = false;
+      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [templateId, caption, style]);
@@ -106,6 +122,9 @@ export function ExportButtons({
   }, [memeId, templateId, caption, style]);
 
   const handlePingPlatforms = useCallback(async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setIsAnyExportInFlight(true);
     setExporting('ping');
     setExportError(null);
     setPingResult(null);
@@ -130,13 +149,19 @@ export function ExportButtons({
       console.error('Platform ping failed:', err);
       setExportError('Platform ping failed. Please try again.');
     } finally {
+      exportInFlightRef.current = false;
+      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [memeId, templateId, style]);
 
   const handleGenerateMetadata = useCallback(async () => {
+    if (exportInFlightRef.current) return;
+    exportInFlightRef.current = true;
+    setIsAnyExportInFlight(true);
     setExporting('metadata');
     setExportError(null);
+    setMetadataJson(null);
     try {
       const res = await fetch('/api/nft/metadata', {
         method: 'POST',
@@ -153,6 +178,8 @@ export function ExportButtons({
       console.error('Metadata generation failed:', err);
       setExportError('Metadata generation failed. Please try again.');
     } finally {
+      exportInFlightRef.current = false;
+      setIsAnyExportInFlight(false);
       setExporting(null);
     }
   }, [memeId, templateId, caption, style]);
@@ -179,7 +206,6 @@ export function ExportButtons({
   ];
 
   const buttonConfigById = new Map(buttons.map((button) => [button.id, button]));
-  const isAnyExportInFlight = exporting !== null;
 
   const isButtonDisabled = (buttonId: string): boolean =>
     isAnyExportInFlight ||
