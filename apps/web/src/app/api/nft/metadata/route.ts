@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
       schema: 'rex-meme-studio-nft-metadata-v1',
       metadataId,
       // Compact deterministic identifier used by UI/indexing flows.
-      // Keep this short while preserving enough entropy from metadataId.
-      tokenId: metadataId.slice(0, 16),
+      // Keep 128 bits (32 hex chars) to preserve strong uniqueness guarantees.
+      tokenId: metadataId.slice(0, 32),
       name: `Rex Meme #${memeId}`,
       description: caption,
       image: `${baseUrl}/api/meme/render?id=${encodeURIComponent(memeId)}&templateId=${encodeURIComponent(templateId)}&caption=${encodeURIComponent(caption)}&style=${encodeURIComponent(style)}&format=png`,
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       integrations: {
         farcaster: `${baseUrl}/api/frame/meme/${encodeURIComponent(memeId)}`,
         blinks: `${baseUrl}/api/blink/meme/${encodeURIComponent(memeId)}`,
-        x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Rex Meme #${memeId}`)}&url=${encodeURIComponent(memeUrl)}`,
+        x: `https://x.com/intent/tweet?text=${encodeURIComponent(`Rex Meme #${memeId}`)}&url=${encodeURIComponent(memeUrl)}`,
         zora: `https://zora.co/create`,
         lens: `https://lens.xyz`,
       },

@@ -174,11 +174,13 @@ export function ExportButtons({
       label: 'Copy Metadata',
       icon: '📋',
       onClick: handleCopyMetadata,
+      requiresMetadata: true,
     },
   ];
 
   const isButtonDisabled = (buttonId: string): boolean =>
-    exporting === buttonId || (buttonId === 'copy-metadata' && !metadataJson);
+    exporting === buttonId ||
+    (!!buttons.find((button) => button.id === buttonId)?.requiresMetadata && !metadataJson);
 
   return (
     <div className="space-y-2">
