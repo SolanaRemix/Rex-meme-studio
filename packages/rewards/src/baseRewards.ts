@@ -1,5 +1,7 @@
 import type { RewardRequest, RewardResult, RewardMode } from './types';
 
+const BASE_TX_HASH_HEX_LENGTH = 64;
+
 function parsePositiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value ?? '', 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -11,7 +13,9 @@ function getBaseMode(): RewardMode {
 }
 
 function createMockBaseSignature(): string {
-  const hex = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  const hex = Array.from({ length: BASE_TX_HASH_HEX_LENGTH }, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  ).join('');
   return `0x${hex}`;
 }
 

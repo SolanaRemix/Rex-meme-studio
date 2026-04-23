@@ -1,6 +1,7 @@
 import type { RewardRequest, RewardResult, RewardMode } from './types';
 
 const BASE58_CHARS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const SOLANA_SIGNATURE_LENGTH = 88;
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value ?? '', 10);
@@ -13,7 +14,10 @@ function getSolanaMode(): RewardMode {
 }
 
 function createMockSolanaSignature(): string {
-  return Array.from({ length: 88 }, () => BASE58_CHARS[Math.floor(Math.random() * BASE58_CHARS.length)]).join('');
+  return Array.from(
+    { length: SOLANA_SIGNATURE_LENGTH },
+    () => BASE58_CHARS[Math.floor(Math.random() * BASE58_CHARS.length)]
+  ).join('');
 }
 
 export async function claimSolanaReward(req: RewardRequest): Promise<RewardResult> {
