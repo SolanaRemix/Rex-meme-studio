@@ -3,12 +3,19 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { NeoButton } from '@design-system/components/NeoButton';
-import { getTemplate, renderMemeSvg, type MemeStyle } from 'meme-engine';
+import { renderMemeSvg, type MemeStyle } from 'meme-engine';
 import { MemePreview } from '@/components/MemePreview';
 
 const VALID_STYLES: MemeStyle[] = ['neoGlow', 'flash', 'glitch'];
 const SUPPORTED_TEMPLATE_IDS = ['bonk', 'wif', 'mew', 'jup', 'pengu'] as const;
 type SupportedTemplateId = (typeof SUPPORTED_TEMPLATE_IDS)[number];
+const TEMPLATE_TOKENS: Record<SupportedTemplateId, string> = {
+  bonk: 'BONK',
+  wif: 'WIF',
+  mew: 'MEW',
+  jup: 'JUP',
+  pengu: 'PENGU',
+};
 const MAX_TEMPLATE_LENGTH = 32;
 
 function getStyle(style: string | null): MemeStyle {
@@ -43,7 +50,7 @@ export default function MemeGalleryPage() {
   }, []);
 
   const { memeId, template, caption, style } = params;
-  const token = getTemplate(template).token;
+  const token = TEMPLATE_TOKENS[template];
 
   const svg = useMemo(
     () =>
