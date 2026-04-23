@@ -31,7 +31,7 @@ function resolveTemplateId(value: string): SupportedTemplateId {
 export default function MemeGalleryPage() {
   const [params, setParams] = useState({
     memeId: 'demo',
-    template: 'bonk',
+    template: 'bonk' as SupportedTemplateId,
     caption: 'Rex Meme #demo',
     style: 'neoGlow' as MemeStyle,
   });
