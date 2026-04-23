@@ -3,14 +3,22 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { NeoButton } from '@design-system/components/NeoButton';
-import { renderMemeSvg, type MemeStyle } from 'meme-engine';
+import { getTemplate, renderMemeSvg, type MemeStyle } from 'meme-engine';
 import { MemePreview } from '@/components/MemePreview';
 
 const VALID_STYLES: MemeStyle[] = ['neoGlow', 'flash', 'glitch'];
+const SUPPORTED_TEMPLATE_IDS = ['bonk', 'wif', 'mew', 'jup', 'pengu'] as const;
+type SupportedTemplateId = (typeof SUPPORTED_TEMPLATE_IDS)[number];
 const MAX_TEMPLATE_LENGTH = 32;
 
 function getStyle(style: string | null): MemeStyle {
   return VALID_STYLES.includes((style ?? '') as MemeStyle) ? (style as MemeStyle) : 'neoGlow';
+}
+
+function resolveTemplateId(value: string): SupportedTemplateId {
+  return SUPPORTED_TEMPLATE_IDS.includes(value as SupportedTemplateId)
+    ? (value as SupportedTemplateId)
+    : 'bonk';
 }
 
 export default function MemeGalleryPage() {
@@ -24,17 +32,18 @@ export default function MemeGalleryPage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const memeId = searchParams.get('id')?.trim() || 'demo';
-    const template = (searchParams.get('template')?.trim().toLowerCase() || 'bonk').slice(
+    const templateRaw = (searchParams.get('template')?.trim().toLowerCase() || 'bonk').slice(
       0,
       MAX_TEMPLATE_LENGTH
     );
+    const template = resolveTemplateId(templateRaw);
     const caption = searchParams.get('caption')?.trim() || `Rex Meme #${memeId}`;
     const style = getStyle(searchParams.get('style'));
     setParams({ memeId, template, caption, style });
   }, []);
 
   const { memeId, template, caption, style } = params;
-  const token = template.toUpperCase();
+  const token = getTemplate(template).token;
 
   const svg = useMemo(
     () =>

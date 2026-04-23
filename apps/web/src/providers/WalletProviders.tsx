@@ -6,6 +6,11 @@ import {
   WalletProvider,
 } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+  CoinbaseWalletAdapter as SolanaCoinbaseWalletAdapter,
+} from '@solana/wallet-adapter-wallets';
 import { WagmiProvider, http } from 'wagmi';
 import { base, mainnet } from 'wagmi/chains';
 import {
@@ -53,13 +58,21 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
     process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'mainnet-beta'
       ? 'https://api.mainnet-beta.solana.com'
       : 'https://api.devnet.solana.com';
+  const wallets =
+    typeof window === 'undefined'
+      ? []
+      : [
+          new PhantomWalletAdapter(),
+          new SolflareWalletAdapter(),
+          new SolanaCoinbaseWalletAdapter(),
+        ];
 
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
           <ConnectionProvider endpoint={solanaEndpoint}>
-            <WalletProvider wallets={[]} autoConnect>
+            <WalletProvider wallets={wallets} autoConnect>
               <WalletModalProvider>{children}</WalletModalProvider>
             </WalletProvider>
           </ConnectionProvider>

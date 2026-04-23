@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "pnpm --filter @rex-meme-studio/web dev",
     "build": "turbo run build",

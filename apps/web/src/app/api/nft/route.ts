@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       name: `Rex Meme #${memeId}`,
       description: caption,
-      image: `${baseUrl}/api/meme?templateId=${encodeURIComponent(templateId)}&caption=${encodeURIComponent(caption)}&style=${encodeURIComponent(style)}&toPng=1`,
+      image: `${baseUrl}/api/meme/render?templateId=${encodeURIComponent(templateId)}&caption=${encodeURIComponent(caption)}&style=${encodeURIComponent(style)}&format=png`,
       attributes: [
         { trait_type: 'Template', value: templateId.toUpperCase() },
         { trait_type: 'Style', value: style },
