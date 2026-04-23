@@ -41,5 +41,5 @@ export const bonkTemplate: MemeTemplate = {
       },
     },
   ],
-  styleHints: ['orange-glow', 'doge-energy'],
+  styleHints: ['neoGlow', 'orange-glow', 'doge-character'],
 };

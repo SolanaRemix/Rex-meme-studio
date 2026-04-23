@@ -7,10 +7,11 @@
     "dev": "pnpm --filter @rex-meme-studio/web dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^2.8.14",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.5"
   }
 }

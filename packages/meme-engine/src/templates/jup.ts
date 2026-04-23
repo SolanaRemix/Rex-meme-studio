@@ -41,5 +41,5 @@ export const jupTemplate: MemeTemplate = {
       },
     },
   ],
-  styleHints: ['blue-glow', 'defi-energy'],
+  styleHints: ['neoGlow', 'blue-glow', 'defi-character'],
 };

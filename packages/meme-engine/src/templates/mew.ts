@@ -41,5 +41,5 @@ export const mewTemplate: MemeTemplate = {
       },
     },
   ],
-  styleHints: ['teal-glow', 'cat-energy'],
+  styleHints: ['neoGlow', 'teal-glow', 'cat-character'],
 };

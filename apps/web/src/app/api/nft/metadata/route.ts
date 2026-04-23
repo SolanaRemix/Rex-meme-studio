@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
       templateId?: string;
       caption?: string;
       style?: string;
+      creator?: string;
     };
-
-    const memeId = cleanText(body.memeId ?? '', 64);
+    const creator = cleanText(body.creator ?? 'unknown', 64);
+    const memeId = cleanText(body.memeId ?? randomUUID().replace(/-/g, '').slice(0, 12), 64);
     const templateId = cleanText(body.templateId ?? '', 32).toLowerCase();
     const caption = cleanText(body.caption ?? '', 240);
     const style = cleanText(body.style ?? 'neoGlow', 16);
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
       attributes: [
         { trait_type: 'Template', value: templateId.toUpperCase() },
         { trait_type: 'Style', value: style },
+        { trait_type: 'Creator', value: creator },
         { trait_type: 'Engine', value: 'Rex Meme Studio AI' },
       ],
       integrations: {
