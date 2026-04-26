@@ -41,5 +41,5 @@ export const penguTemplate: MemeTemplate = {
       },
     },
   ],
-  styleHints: ['red-glow', 'pudgy-energy'],
+  styleHints: ['neoGlow', 'red-glow', 'pudgy-penguin-character'],
 };

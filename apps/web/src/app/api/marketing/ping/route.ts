@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PLATFORM_TARGETS = [
-  'OpenSea',
-  'Magic Eden',
-  'Tensor',
-  'Rarible',
-  'Farcaster',
-  'X Feed',
-  'Discord Webhook',
-  'Telegram Channel',
-];
+const PLATFORM_TARGETS = ['farcaster', 'zora', 'lens', 'blinks', 'x'] as const;
+type PlatformTarget = (typeof PLATFORM_TARGETS)[number];
 
 function isValidId(input: string): boolean {
   return /^[a-zA-Z0-9_]{3,64}$/.test(input);
@@ -21,6 +13,7 @@ export async function POST(req: NextRequest) {
       memeId?: string;
       templateId?: string;
       style?: string;
+      platforms?: string[];
     };
 
     const memeId = body.memeId?.trim() ?? '';
@@ -34,8 +27,16 @@ export async function POST(req: NextRequest) {
     const templateId = (body.templateId ?? 'unknown').slice(0, 50);
     const style = (body.style ?? 'neoGlow').slice(0, 20);
 
+    const queuedPlatforms: PlatformTarget[] = body.platforms?.length
+      ? body.platforms
+          .map((platform) => platform.toLowerCase())
+          .filter((platform): platform is PlatformTarget =>
+            PLATFORM_TARGETS.includes(platform as PlatformTarget)
+          )
+      : [...PLATFORM_TARGETS];
+
     // Simulated marketing fan-out. Replace this with real webhooks/queue workers in production.
-    const results = PLATFORM_TARGETS.map((platform) => ({
+    const results = queuedPlatforms.map((platform) => ({
       platform,
       delivered: true,
       ref: `${platform.toLowerCase().replace(/\s+/g, '-')}:${memeId}`,
@@ -43,11 +44,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      queued: queuedPlatforms,
       memeId,
       templateId,
       style,
       delivered: results.length,
-      total: PLATFORM_TARGETS.length,
+      total: queuedPlatforms.length,
       results,
       mode: 'simulated',
       timestamp: new Date().toISOString(),

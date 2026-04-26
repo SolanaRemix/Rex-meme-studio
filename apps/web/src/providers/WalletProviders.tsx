@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import {
   ConnectionProvider,
   WalletProvider,
@@ -58,15 +58,14 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
     process.env.NEXT_PUBLIC_SOLANA_CLUSTER === 'mainnet-beta'
       ? 'https://api.mainnet-beta.solana.com'
       : 'https://api.devnet.solana.com';
-
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new SolanaCoinbaseWalletAdapter(),
-    ],
-    []
-  );
+  const wallets =
+    typeof window === 'undefined'
+      ? []
+      : [
+          new PhantomWalletAdapter(),
+          new SolflareWalletAdapter(),
+          new SolanaCoinbaseWalletAdapter(),
+        ];
 
   return (
     <WagmiProvider config={wagmiConfig}>

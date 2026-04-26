@@ -41,5 +41,5 @@ export const wifTemplate: MemeTemplate = {
       },
     },
   ],
-  styleHints: ['purple-glow', 'hat-vibes'],
+  styleHints: ['neoGlow', 'purple-glow', 'hat-character'],
 };

@@ -13,7 +13,8 @@ export class BaseRewardService {
   }
 
   async sendReward(request: RewardRequest): Promise<RewardResult> {
-    const { walletAddress, memeId, amount } = request;
+    const { walletAddress, memeId } = request;
+    const amount = request.amount ?? this.config.rewardPerMeme;
 
     if (this.config.mode === 'off') {
       return {
