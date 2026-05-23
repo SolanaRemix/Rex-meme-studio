@@ -13,7 +13,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "turbo": "^2.8.14",
+    "turbo": "^2.9.14",
     "typescript": "^5",
     "vitest": "4.1.5"
   }
